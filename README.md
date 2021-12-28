@@ -15,5 +15,4 @@ a development conveniance during the early stage of this project. To make it wor
 
 ## TODO
 
-- [ ] [list f1 f2] causes crashes. Should test for 'list' in argv!
 

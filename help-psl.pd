@@ -1,4 +1,4 @@
-#N canvas 409 71 444 516 12;
+#N canvas 409 71 444 730 12;
 #X msg 150 24 bessel 0.5;
 #X msg 271 28 rando 2 123;
 #X msg 273 69 airy_ai 2.5;
@@ -21,6 +21,9 @@
 #X msg 252 251 rando 4 123;
 #X msg 231 219 list 1.5 2.5;
 #X msg 20 304 list 5 127;
+#X obj 160 528 psl hypot3;
+#X msg 160 478 2 3 4;
+#X listbox 160 574 20 0 0 0 - - - 0;
 #X connect 0 0 10 0;
 #X connect 1 0 10 0;
 #X connect 2 0 10 0;
@@ -40,3 +43,5 @@
 #X connect 18 0 12 0;
 #X connect 19 0 12 0;
 #X connect 20 0 12 0;
+#X connect 21 0 23 0;
+#X connect 22 0 21 0;
