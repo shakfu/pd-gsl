@@ -6,8 +6,8 @@ Features:
 - request calculation via message
 - function lookup
 
-Author: gpt3
-Repo: https://github.com/gpt3/psl.git
+Author: shakfu
+Repo: https://github.com/shakfu/pd-psl.git
 
 */
 #include <gsl/gsl_rng.h>
@@ -100,34 +100,39 @@ void psl_float(t_psl *x, t_floatarg f) {
 }
 
 void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
+
     if (s == gensym("list")) {
         post("s: list");
-    }
 
-    if (s != gensym("") && s != gensym("list")) {
-        select_default_function(x, s);
-    }
+        if (argc == 0) {
+            return;
+        }
 
-    if (argc == 0) {
-        return;
-    }
+        if (argc == 1) {
+            if (argv->a_type == A_FLOAT) {
+                float f = atom_getfloat(argv);
+                post("got float: %f", f);
+                x->ufunc(x, f);
+                return;
+            }
+        }
 
-    if (argc == 1) {
-        if (argv->a_type == A_FLOAT) {
-            float f = atom_getfloat(argv);
-            post("got float: %f", f);
-            x->ufunc(x, f);
+        if (argc == 2) {
+            char buf[1000];
+            for (int i = 0; i < argc; i++) {
+                atom_string((argv+i), buf, 1000);
+                post("arg+%i: %s", i, buf);
+            }
+            if (argv->a_type == A_FLOAT && (argv + 1)->a_type == A_FLOAT) {
+                float f1 = atom_getfloat(argv+0);
+                float f2 = atom_getfloat(argv+1);
+                post("f(%.2f, %.2f)", f1, f2);
+                x->bfunc(x, f1, f2);
+                return;
+            }
         }
     }
 
-    if (argc == 2) {
-        if (argv->a_type == A_FLOAT && (argv + 1)->a_type == A_FLOAT) {
-            float f1 = atom_getfloat(argv);
-            float f2 = atom_getfloat(argv + 1);
-            post("f(%.2f, %.2f)", f1, f2);
-            x->bfunc(x, f1, f2);
-        }
-    }
     post("list body");
     return;
 
@@ -140,18 +145,18 @@ void psl_rando(t_psl *x, t_floatarg n, t_floatarg seed) {
     post("rando: n:%.2f seed:%.2f", n, seed);
     gsl_rng_env_setup();
 
-    gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);
-    gsl_rng_set(r, seed);
+    int argc = (int)n;
+    int _seed = (int)seed;
 
-    t_atom av[(int)n];
-    for (int i = 0; i < n; i++) {
+    gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);
+    gsl_rng_set(r, _seed);
+
+    t_atom av[argc];
+    for (int i = 0; i < argc; i++) {
         SETFLOAT(av + i, gsl_rng_uniform(r));
     }
-    outlet_list(x->out_f, gensym("list"), (int)n, av);
+    outlet_list(x->out_f, gensym("list"), argc, av);
 
-    // for (int i = 0; i < n; i++) {
-    //     outlet_float(x->out_f, gsl_rng_uniform(r));
-    // }
     gsl_rng_free(r);
 }
 

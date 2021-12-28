@@ -24,15 +24,14 @@ void print_algos(void) {
 
 int main(void) {
     int seed = 102;
-
-    int i, n = 10;
+    int n = 10;
 
     gsl_rng_env_setup();
 
     gsl_rng* r = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(r, seed);
 
-    for (i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         double u = gsl_rng_uniform(r);
         printf("%.5f\n", u);
     }
