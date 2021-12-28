@@ -3,7 +3,6 @@
 Wraps some [gsl](https://www.gnu.org/software/gsl/) functions for puredata.
 
 
-
 ## To build
 
 The static libraries which are included in this project are macos only. This is
@@ -17,6 +16,7 @@ make
 Note: To make it work with other platforms just use the platform specific static libs instead.
 
 
+## TODO
 
-
+- [ ] [list f1 f2] causes crashes. Should test for 'list' in argv!
 
