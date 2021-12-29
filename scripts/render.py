@@ -64,8 +64,11 @@ items = [
 #       h = ((h << 5) + h) + ord(c)
 #    return h
 
-
-
+def hash(str):
+   h = 0
+   for c in str:
+      h += (h << 1) + ord(c)
+   return h
 
 
 class Func:
@@ -114,7 +117,12 @@ def render(**kwds):
     rendered = tmpl.render(**kwds)
     return rendered
 
-funcs = [Func(i[0],i[1], i[2]) for i in items]
+def main():
+   funcs = [Func(i[0],i[1], i[2]) for i in items]
+   with open('psl.c', 'w') as f:
+      f.write(render(funcs=funcs, skip=SKIP_FUNCS))
 
-with open('psl.c', 'w') as f:
-   f.write(render(funcs=funcs, skip=SKIP_FUNCS))
+
+if __name__ == '__main__':
+   main()
+

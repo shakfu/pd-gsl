@@ -71,4 +71,4 @@ It would be nice to have inlets which are mapped to the functions dynamically gr
 
 - [ ] Revisit proxy inlets to check if it is possible to have the number of inlets dynamically grow with as per the selected functions (and its number of arguments).
 
-
+- [ ] try using `void*` + casting instead of one type of func for each `nargs`

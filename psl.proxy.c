@@ -34,6 +34,17 @@ Repo: https://github.com/shakfu/pd-psl.git
  * ---------------------------------------------------------------------------
  */
 
+// rudimentary str -> int conversion
+// unsigned long hash(const char *str) {
+//     unsigned int h = 0;
+//     int c;
+
+//     while ((c = *str++)) h += c;
+
+//     return h;
+// }
+
+
 unsigned long hash(const char *str) {
     unsigned int h = 0;
     int c;
@@ -51,7 +62,7 @@ unsigned long hash(const char *str) {
 //     int c;
 
 //     while ((c = *str++))
-//         h = ((h << 5) + h) + c;
+//         h = ((h << 5) + h) + c; /* h * 33 + c */
 
 //     return h;
 // }
