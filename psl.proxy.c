@@ -34,17 +34,6 @@ Repo: https://github.com/shakfu/pd-psl.git
  * ---------------------------------------------------------------------------
  */
 
-// rudimentary str -> int conversion
-// unsigned long hash(const char *str) {
-//     unsigned int h = 0;
-//     int c;
-
-//     while ((c = *str++)) h += c;
-
-//     return h;
-// }
-
-
 unsigned long hash(const char *str) {
     unsigned int h = 0;
     int c;
@@ -62,7 +51,7 @@ unsigned long hash(const char *str) {
 //     int c;
 
 //     while ((c = *str++))
-//         h = ((h << 5) + h) + c; /* h * 33 + c */
+//         h = ((h << 5) + h) + c;
 
 //     return h;
 // }
@@ -178,17 +167,25 @@ typedef struct _psl {
 
 // typed-methods
 void psl_bang(t_psl *x) {
-    if (x->inlets == 2 && x->nargs == 2) {
+    if (x->nargs == 1 && x->inlets == 0) {
+        x->ufunc(x, x->arg_array[0]);
+    }
+
+    if (x->nargs == 2 && x->inlets == 1) {
         x->bfunc(x, x->arg_array[0], x->arg_array[1]);
     }
 
-    post("psl_bang");
+    if (x->nargs == 3 && x->inlets == 2) {
+        x->tfunc(x, x->arg_array[0], x->arg_array[1], x->arg_array[2]);
+    }
+
 }
 
 
 void psl_float(t_psl *x, t_floatarg f) {
     post("psl_float: %f", f);
-    x->ufunc(x, f);
+    x->arg_array[0] = f;
+    psl_bang(x);
 }
 
 void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
@@ -589,9 +586,9 @@ void select_default_function(t_psl *x, t_symbol *s) {
 
 static void psl_inlet_float(t_psl_inlet *x, float f)
 {
-    x->owner->arg_array[x->id] = f;
+    x->owner->arg_array[x->id+1] = f;
     // outlet_float(x->owner->out_f, x->id + f);
-    post("x->owner->arg_array[x->id]: %.02f", x->owner->arg_array[x->id]);
+    post("x->owner->arg_array[x->id]: %.02f", x->owner->arg_array[x->id+1]);
     psl_bang(x->owner);
 }
 
@@ -606,14 +603,17 @@ void *psl_new(t_symbol *s) {
     t_psl *x = (t_psl *)pd_new(psl_class);
 
     // initialize variables
-    x->nargs = 1;
-    x->ufunc = &psl_bessel_j0;
+    x->nargs = 0;
+    x->inlets = 0;
+    x->ufunc = NULL;
+    x->bfunc = NULL;
+    x->tfunc = NULL;
 
     select_default_function(x, s);
-
+    // sets x->nargs to correct number
 
     // create inlets
-    x->inlets = 2;
+    x->inlets = x->nargs - 1;
     x->ins = (t_psl_inlet *)getbytes(x->inlets * sizeof(*x->ins));
     x->arg_array = malloc(x->inlets * sizeof(float));
     

@@ -71,4 +71,40 @@ It would be nice to have inlets which are mapped to the functions dynamically gr
 
 - [ ] Revisit proxy inlets to check if it is possible to have the number of inlets dynamically grow with as per the selected functions (and its number of arguments).
 
+```
+
+1st inlet is created automaticaly
+
+1st inlet -> float f1;
+2nd-7th via inlet-on-demand:
+	2nd -> float f2;
+	3rd -> float f3;
+	...
+
+nargs: accurate # of arguments
+inlets: relates to 1-6 of inlets on demand 
+
+so:
+
+nargs: 2
+inlets: 1
+
+assert(x->nargs == x->inlets - 1)
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
 - [ ] try using `void*` + casting instead of one type of func for each `nargs`
