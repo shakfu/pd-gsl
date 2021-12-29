@@ -14,3 +14,10 @@ datafiles = help-psl.pd
 
 PDLIBBUILDER_DIR=pd-lib-builder
 include $(PDLIBBUILDER_DIR)/Makefile.pdlibbuilder
+
+
+render:
+	@scripts/render.py && make
+
+hash:
+	@gcc -o ./scripts/hash scripts/hash-functions.c

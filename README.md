@@ -14,6 +14,8 @@ Tentatively using the name `psl` instead of `gsl` to prevent namespace collision
 
 The external is a single statically linked puredata external with the name `[psl]` or `[gsl]` and which has a single inlet and a single outlet.
 
+### Without Arguments
+
 Basic usage is without arguments, where the object is sent messages to obtain a calculation:
 
 ```
@@ -24,10 +26,14 @@ In this case, `<func_name>` is an abbreviated name of a `gsl` function following
 
 The result can be a single float value or a list of floats depending on the function.
 
-Another usage variation is to include the name of a function in during object creation, such as `[gsl bessel_j0]`. In this case, the following rules apply:
+### With Function Name
 
-- if the function has 1 argument, then the inlet feeds the function
-- if the function has > than 1 argument then a `list` message of a length equal to its number of argument can be sent to the object as arguments:
+Another usage variation is to include the name of a function as an argument during object creation, such as `[gsl bessel_j0]`. In this case, the following options apply:
+
+- The # of inlets grow to the number of arguments so you can feed them directly with floatss via the number object.
+
+
+- The function can be be fed arguments using a `list` message to the leftmost inlet with a length equal to its number of arguments:
 
 ```
 [1.5 2.1 3.2(
@@ -43,8 +49,7 @@ Please see the file `help-psl.pd` for examples.
 make
 ```
 
-Note that the the static libraries included in this project are currently macos only. This is
-a development conveniance during the early stage of this project. To make it work with other platforms just use the platform specific static libs instead.
+Note that the the static libraries included in this project are currently MACOS only. This is a development conveniance during the early stage of this project and not required per se. To make it work with other platforms just use the platform specific static libs instead.
 
 
 ## Development
@@ -67,44 +72,8 @@ typically running the following with each change:
 
 ## TODO
 
-It would be nice to have inlets which are mapped to the functions dynamically grow with the number of arguments of the funcion once it is entered as an argument.
+- [ ] more functions!!
 
-- [ ] Revisit proxy inlets to check if it is possible to have the number of inlets dynamically grow with as per the selected functions (and its number of arguments).
-
-```
-
-1st inlet is created automaticaly
-
-1st inlet -> float f1;
-2nd-7th via inlet-on-demand:
-	2nd -> float f2;
-	3rd -> float f3;
-	...
-
-nargs: accurate # of arguments
-inlets: relates to 1-6 of inlets on demand 
-
-so:
-
-nargs: 2
-inlets: 1
-
-assert(x->nargs == x->inlets - 1)
+- [x] inlets-on-demand: proxy inlets to have the number of inlets dynamically grow with as per the selected functions (and its number of arguments).
 
 
-
-
-
-
-
-
-
-
-
-
-```
-
-
-
-
-- [ ] try using `void*` + casting instead of one type of func for each `nargs`

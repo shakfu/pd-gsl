@@ -5,6 +5,7 @@ Provide a library of gsl functions.
 Features:
 - request calculation via message
 - function lookup
+- inlets-on-demand
 
 Author: shakfu
 Repo: https://github.com/shakfu/pd-psl.git
@@ -21,18 +22,17 @@ Repo: https://github.com/shakfu/pd-psl.git
 
 #include "m_pd.h"
 
-/*
- * macros and defines
- * ---------------------------------------------------------------------------
- */
+
+// macros and defines
+//  ---------------------------------------------------------------------------
+
 
 #define MAX_ARGS 6
+#define STR_BUF_SIZE 1000
 
 
-/*
- * function lookup infratructure
- * ---------------------------------------------------------------------------
- */
+// function lookup infratructure
+// ---------------------------------------------------------------------------
 
 unsigned long hash(const char *str) {
     unsigned int h = 0;
@@ -45,21 +45,8 @@ unsigned long hash(const char *str) {
 }
 
 
-// unsigned long hash(const char *str)
-// {
-//     unsigned long h = 5381;
-//     int c;
-
-//     while ((c = *str++))
-//         h = ((h << 5) + h) + c;
-
-//     return h;
-// }
-
-
-
-
 enum FUNC {
+    ADD = 1273,
     LOG1P = 12931,
     EXPM1 = 12805,
     HYPOT = 13148,
@@ -96,31 +83,30 @@ enum FUNC {
     DEBYE_2 = 109892,
     DEBYE_3 = 109893,
     DEBYE_4 = 109894,
-    ADD = 1273
 };
 
-/*
- * forward declarations / prototypes
- * ---------------------------------------------------------------------------
- */
+
+// forward declarations / prototypes
+// ---------------------------------------------------------------------------
+
 
 typedef struct _psl t_psl;
 
 void select_default_function(t_psl *x, t_symbol *s);
 
-/*
- * psl class objects
- * ---------------------------------------------------------------------------
- */
+
+// psl class objects
+// ---------------------------------------------------------------------------
+
 
 static t_class *psl_class;
 
 static t_class *psl_inlet_class;
 
-/*
- * psl class struct (data-space)
- * ---------------------------------------------------------------------------
- */
+
+// psl class struct (data-space)
+// ---------------------------------------------------------------------------
+
 
 typedef void (*unary_func)(t_psl *, t_floatarg);
 typedef void (*binary_func)(t_psl *, t_floatarg, t_floatarg);
@@ -129,9 +115,9 @@ typedef void (*tri_func)(t_psl *, t_floatarg, t_floatarg, t_floatarg);
 
 typedef struct _psl_inlet
 {
-    t_class *x_pd;  // Minimal Pd object.
-    t_psl   *owner; // The owning object to forward inlet messages to.
-    int     id;     // The number of this inlet.
+    t_class *x_pd;  // minimal pd object.
+    t_psl   *owner; // the owning object to forward inlet messages to.
+    int     id;     // the number of this inlet.
 } t_psl_inlet;
 
 
@@ -153,19 +139,20 @@ typedef struct _psl {
     // private vars
 
     // inlets
-    int inlets;          // number of inlets
+    int inlets;          // # of extra inlets in addition to default
     t_psl_inlet *ins;    // the inlets themselves
 
     // outlets
     t_outlet *out_f;
 } t_psl;
 
-/*
- * psl class methods (operation-space)
- * ---------------------------------------------------------------------------
- */
+
+// psl class methods (operation-space)
+// ---------------------------------------------------------------------------
+
 
 // typed-methods
+
 void psl_bang(t_psl *x) {
     if (x->nargs == 1 && x->inlets == 0) {
         x->ufunc(x, x->arg_array[0]);
@@ -181,11 +168,15 @@ void psl_bang(t_psl *x) {
 
 }
 
-
 void psl_float(t_psl *x, t_floatarg f) {
     post("psl_float: %f", f);
-    x->arg_array[0] = f;
-    psl_bang(x);
+    if (x->nargs > 0) {
+        x->arg_array[0] = f;
+        psl_bang(x);
+    } else {
+        post("nothing to do: no function selected.");
+        outlet_float(x->out_f, f);
+    }
 }
 
 void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
@@ -207,9 +198,9 @@ void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
         }
 
         if (argc == 2) {
-            char buf[1000];
+            char buf[STR_BUF_SIZE];
             for (int i = 0; i < argc; i++) {
-                atom_string((argv+i), buf, 1000);
+                atom_string((argv+i), buf, STR_BUF_SIZE);
                 post("arg+%i: %s", i, buf);
             }
             if (argv->a_type == A_FLOAT && (argv + 1)->a_type == A_FLOAT) {
@@ -222,9 +213,9 @@ void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
         }
 
         if (argc == 3) {
-            char buf[1000];
+            char buf[STR_BUF_SIZE];
             for (int i = 0; i < argc; i++) {
-                atom_string((argv+i), buf, 1000);
+                atom_string((argv+i), buf, STR_BUF_SIZE);
                 post("arg+%i: %s", i, buf);
             }
             if (argv->a_type == A_FLOAT && (argv+1)->a_type == A_FLOAT && (argv+2)->a_type == A_FLOAT) {
@@ -246,6 +237,11 @@ void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
 }
 
 // message-methods
+
+void psl_add(t_psl *x, t_floatarg f1, t_floatarg f2) {
+    outlet_float(x->out_f, f1+f2);
+}
+
 void psl_rando(t_psl *x, t_floatarg n, t_floatarg seed) {
     post("rando: n:%.2f seed:%.2f", n, seed);
     gsl_rng_env_setup();
@@ -407,16 +403,9 @@ void psl_debye_4(t_psl *x, t_floatarg f) {
 
 
 
-void psl_add(t_psl *x, t_floatarg f1, t_floatarg f2) {
-    outlet_float(x->out_f, f1+f2);
-}
+// function selection
+//---------------------------------------------------------------------------
 
-
-
-/*
- * function selection
- * ---------------------------------------------------------------------------
- */
 
 // set default function from symbol
 void select_default_function(t_psl *x, t_symbol *s) {
@@ -424,6 +413,10 @@ void select_default_function(t_psl *x, t_symbol *s) {
     post("func %s selected", s->s_name);
 
     switch (hash(s->s_name)) {
+        case ADD:
+            x->nargs = 2;
+            x->bfunc = &psl_add;
+            break;
         case LOG1P:
             x->nargs = 1;
             x->ufunc = &psl_log1p;
@@ -568,20 +561,15 @@ void select_default_function(t_psl *x, t_symbol *s) {
             x->nargs = 1;
             x->ufunc = &psl_debye_4;
             break;
-        case ADD:
-            x->nargs = 2;
-            x->bfunc = &psl_add;
-            break;
         default:
             post("func selection failed, reverting to defaults");
             break;
    }
 }
 
-/*
- * psl-inlet funcs
- * ---------------------------------------------------------------------------
- */
+
+// psl-inlet funcs
+// ---------------------------------------------------------------------------
 
 
 static void psl_inlet_float(t_psl_inlet *x, float f)
@@ -593,11 +581,9 @@ static void psl_inlet_float(t_psl_inlet *x, float f)
 }
 
 
+// psl class constructor
+// ---------------------------------------------------------------------------
 
-/*
- * psl class constructor
- * ---------------------------------------------------------------------------
- */
 
 void *psl_new(t_symbol *s) {
     t_psl *x = (t_psl *)pd_new(psl_class);
@@ -633,10 +619,9 @@ void *psl_new(t_symbol *s) {
 }
 
 
-/*
- * psl class destructor
- * ---------------------------------------------------------------------------
- */
+// psl class destructor
+// ---------------------------------------------------------------------------
+
 
 // TODO: not sure if this is correct!
 void psl_free(t_psl *x) {
@@ -646,10 +631,9 @@ void psl_free(t_psl *x) {
 }
 
 
-/*
- * psl class setup
- * ---------------------------------------------------------------------------
- */
+// psl class setup
+// ---------------------------------------------------------------------------
+
 
 void psl_setup(void) {
 
@@ -676,9 +660,11 @@ void psl_setup(void) {
     class_addfloat(psl_class, psl_float);
     class_addlist(psl_class, psl_list);
 
+
     // message methods
 
     // class-addmethods
+    class_addmethod(psl_class, (t_method)psl_add,  gensym("add"), A_DEFFLOAT, A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_log1p,  gensym("log1p"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_expm1,  gensym("expm1"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_hypot,  gensym("hypot"), A_DEFFLOAT, A_DEFFLOAT, 0);

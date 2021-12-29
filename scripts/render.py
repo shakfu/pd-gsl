@@ -6,12 +6,14 @@ SKIP_FUNCS = [
    'rando',
    'airy_ai',
    'airy_bi',
+   'add',
 ]
 
 
 items = [
 
    #nargs name          fullname
+   (2,   'add',         None),
    (1,   'log1p',       None),
    (1,   'expm1',       None),
    (2,   'hypot',       None),
@@ -113,7 +115,7 @@ class Func:
 
 
 def render(**kwds):
-    tmpl = Template(filename='scripts/psl.c.mako')
+    tmpl = Template(filename='templates/psl.c.mako')
     rendered = tmpl.render(**kwds)
     return rendered
 
