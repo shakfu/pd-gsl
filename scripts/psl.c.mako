@@ -36,24 +36,34 @@ Repo: https://github.com/shakfu/pd-psl.git
 //     return h;
 // }
 
-
-unsigned long hash(const char *str)
-{
-    unsigned long h = 5381;
+unsigned long hash(const char *str) {
+    unsigned int h = 0;
     int c;
 
-    while ((c = *str++))
-        h = ((h << 5) + h) + c; /* h * 33 + c */
+    while ((c = *str++)) 
+        h += (h << 1) + c;
 
     return h;
 }
 
 
+// unsigned long hash(const char *str)
+// {
+//     unsigned long h = 5381;
+//     int c;
+
+//     while ((c = *str++))
+//         h = ((h << 5) + h) + c; /* h * 33 + c */
+
+//     return h;
+// }
+
+
 
 enum FUNC {
-   % for f in funcs:
-   ${f.name.upper()} = ${f.hashed},
-   % endfor
+    % for f in funcs:
+    ${f.name.upper()} = ${f.hashed},
+    % endfor
 };
 
 /*

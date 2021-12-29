@@ -36,48 +36,58 @@ Repo: https://github.com/shakfu/pd-psl.git
 //     return h;
 // }
 
-
-unsigned long hash(const char *str)
-{
-    unsigned long h = 5381;
+unsigned long hash(const char *str) {
+    unsigned int h = 0;
     int c;
 
-    while ((c = *str++))
-        h = ((h << 5) + h) + c; /* h * 33 + c */
+    while ((c = *str++)) 
+        h += (h << 1) + c;
 
     return h;
 }
 
 
+// unsigned long hash(const char *str)
+// {
+//     unsigned long h = 5381;
+//     int c;
+
+//     while ((c = *str++))
+//         h = ((h << 5) + h) + c; /* h * 33 + c */
+
+//     return h;
+// }
+
+
 
 enum FUNC {
-   LOG1P = 210719732104,
-   EXPM1 = 210711765808,
-   HYPOT = 210715359641,
-   HYPOT3 = 6953606868204,
-   ACOSH = 210706266611,
-   ASINH = 210706834904,
-   ATANH = 210706862129,
-   LDEXP = 210719336962,
-   POW_INT = 229478974757093,
-   POW_2 = 210724494668,
-   POW_3 = 210724494669,
-   POW_4 = 210724494670,
-   POW_5 = 210724494671,
-   POW_6 = 210724494672,
-   POW_7 = 210724494673,
-   POW_8 = 210724494674,
-   POW_9 = 210724494675,
-   RANDO = 210726353817,
-   AIRY_AI = 229459362918627,
-   AIRY_BI = 229459362918660,
-   BESSEL = 6953348449155,
-   CLAUSEN = 229462042978256,
-   DAWSON = 6953422120337,
-   DEBYE_1 = 229463061812638,
-   DEBYE_2 = 229463061812639,
-   DEBYE_3 = 229463061812640,
-   DEBYE_4 = 229463061812641,
+    LOG1P = 12931,
+    EXPM1 = 12805,
+    HYPOT = 13148,
+    HYPOT3 = 39495,
+    ACOSH = 11978,
+    ASINH = 12341,
+    ATANH = 12296,
+    LDEXP = 12829,
+    POW_INT = 122216,
+    POW_2 = 13475,
+    POW_3 = 13476,
+    POW_4 = 13477,
+    POW_5 = 13478,
+    POW_6 = 13479,
+    POW_7 = 13480,
+    POW_8 = 13481,
+    POW_9 = 13482,
+    RANDO = 13254,
+    AIRY_AI = 109980,
+    AIRY_BI = 109983,
+    BESSEL = 36546,
+    CLAUSEN = 110879,
+    DAWSON = 36848,
+    DEBYE_1 = 109891,
+    DEBYE_2 = 109892,
+    DEBYE_3 = 109893,
+    DEBYE_4 = 109894,
 };
 
 /*
