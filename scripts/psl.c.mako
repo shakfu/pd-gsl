@@ -261,7 +261,7 @@ void *psl_new(t_symbol *s) {
 
     // initialize variables
     x->nargs = 1;
-    x->ufunc = &psl_bessel;
+    x->ufunc = &psl_bessel_j0;
 
     select_default_function(x, s);
 
@@ -289,10 +289,13 @@ void psl_setup(void) {
 
     // message methods
 
-    // functions
+    // class-addmethods
     % for f in funcs:
     class_addmethod(psl_class, (t_method)psl_${f.name},  gensym("${f.name}"), ${f.slots}, 0);
     % endfor
+
+    // create alias
+    class_addcreator((t_newmethod)psl_new, gensym("gsl"), A_DEFSYMBOL, 0);
 
     // set name of default help file
     class_sethelpsymbol(psl_class, gensym("help-psl"));

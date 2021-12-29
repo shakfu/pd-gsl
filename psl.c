@@ -79,9 +79,18 @@ enum FUNC {
     POW_8 = 13481,
     POW_9 = 13482,
     RANDO = 13254,
+    FCMP = 4084,
     AIRY_AI = 109980,
     AIRY_BI = 109983,
-    BESSEL = 36546,
+    BESSEL_J0 = 987963,
+    BESSEL_J1 = 987964,
+    BESSEL_JN = 988025,
+    BESSEL_Y0 = 988008,
+    BESSEL_Y1 = 988009,
+    BESSEL_YN = 988070,
+    BESSEL_I0 = 987960,
+    BESSEL_I1 = 987961,
+    BESSEL_IN = 988022,
     CLAUSEN = 110879,
     DAWSON = 36848,
     DEBYE_1 = 109891,
@@ -297,8 +306,44 @@ void psl_pow_9(t_psl *x, t_floatarg f) {
     outlet_float(x->out_f, gsl_pow_9(f));
 }
 
-void psl_bessel(t_psl *x, t_floatarg f) {
+void psl_fcmp(t_psl *x, t_floatarg f1, t_floatarg f2, t_floatarg f3) {
+    outlet_float(x->out_f, gsl_fcmp(f1, f2, f3));
+}
+
+void psl_bessel_j0(t_psl *x, t_floatarg f) {
     outlet_float(x->out_f, gsl_sf_bessel_J0(f));
+}
+
+void psl_bessel_j1(t_psl *x, t_floatarg f) {
+    outlet_float(x->out_f, gsl_sf_bessel_J1(f));
+}
+
+void psl_bessel_jn(t_psl *x, t_floatarg f1, t_floatarg f2) {
+    outlet_float(x->out_f, gsl_sf_bessel_Jn(f1, f2));
+}
+
+void psl_bessel_y0(t_psl *x, t_floatarg f) {
+    outlet_float(x->out_f, gsl_sf_bessel_Y0(f));
+}
+
+void psl_bessel_y1(t_psl *x, t_floatarg f) {
+    outlet_float(x->out_f, gsl_sf_bessel_Y1(f));
+}
+
+void psl_bessel_yn(t_psl *x, t_floatarg f1, t_floatarg f2) {
+    outlet_float(x->out_f, gsl_sf_bessel_Yn(f1, f2));
+}
+
+void psl_bessel_i0(t_psl *x, t_floatarg f) {
+    outlet_float(x->out_f, gsl_sf_bessel_I0(f));
+}
+
+void psl_bessel_i1(t_psl *x, t_floatarg f) {
+    outlet_float(x->out_f, gsl_sf_bessel_I1(f));
+}
+
+void psl_bessel_in(t_psl *x, t_floatarg f1, t_floatarg f2) {
+    outlet_float(x->out_f, gsl_sf_bessel_In(f1, f2));
 }
 
 void psl_clausen(t_psl *x, t_floatarg f) {
@@ -409,6 +454,10 @@ void select_default_function(t_psl *x, t_symbol *s) {
             x->nargs = 2;
             x->bfunc = &psl_rando;
             break;
+        case FCMP:
+            x->nargs = 3;
+            x->tfunc = &psl_fcmp;
+            break;
         case AIRY_AI:
             x->nargs = 1;
             x->ufunc = &psl_airy_ai;
@@ -417,9 +466,41 @@ void select_default_function(t_psl *x, t_symbol *s) {
             x->nargs = 1;
             x->ufunc = &psl_airy_bi;
             break;
-        case BESSEL:
+        case BESSEL_J0:
             x->nargs = 1;
-            x->ufunc = &psl_bessel;
+            x->ufunc = &psl_bessel_j0;
+            break;
+        case BESSEL_J1:
+            x->nargs = 1;
+            x->ufunc = &psl_bessel_j1;
+            break;
+        case BESSEL_JN:
+            x->nargs = 2;
+            x->bfunc = &psl_bessel_jn;
+            break;
+        case BESSEL_Y0:
+            x->nargs = 1;
+            x->ufunc = &psl_bessel_y0;
+            break;
+        case BESSEL_Y1:
+            x->nargs = 1;
+            x->ufunc = &psl_bessel_y1;
+            break;
+        case BESSEL_YN:
+            x->nargs = 2;
+            x->bfunc = &psl_bessel_yn;
+            break;
+        case BESSEL_I0:
+            x->nargs = 1;
+            x->ufunc = &psl_bessel_i0;
+            break;
+        case BESSEL_I1:
+            x->nargs = 1;
+            x->ufunc = &psl_bessel_i1;
+            break;
+        case BESSEL_IN:
+            x->nargs = 2;
+            x->bfunc = &psl_bessel_in;
             break;
         case CLAUSEN:
             x->nargs = 1;
@@ -461,7 +542,7 @@ void *psl_new(t_symbol *s) {
 
     // initialize variables
     x->nargs = 1;
-    x->ufunc = &psl_bessel;
+    x->ufunc = &psl_bessel_j0;
 
     select_default_function(x, s);
 
@@ -489,7 +570,7 @@ void psl_setup(void) {
 
     // message methods
 
-    // functions
+    // class-addmethods
     class_addmethod(psl_class, (t_method)psl_log1p,  gensym("log1p"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_expm1,  gensym("expm1"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_hypot,  gensym("hypot"), A_DEFFLOAT, A_DEFFLOAT, 0);
@@ -508,15 +589,27 @@ void psl_setup(void) {
     class_addmethod(psl_class, (t_method)psl_pow_8,  gensym("pow_8"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_pow_9,  gensym("pow_9"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_rando,  gensym("rando"), A_DEFFLOAT, A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_fcmp,  gensym("fcmp"), A_DEFFLOAT, A_DEFFLOAT, A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_airy_ai,  gensym("airy_ai"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_airy_bi,  gensym("airy_bi"), A_DEFFLOAT, 0);
-    class_addmethod(psl_class, (t_method)psl_bessel,  gensym("bessel"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_j0,  gensym("bessel_j0"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_j1,  gensym("bessel_j1"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_jn,  gensym("bessel_jn"), A_DEFFLOAT, A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_y0,  gensym("bessel_y0"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_y1,  gensym("bessel_y1"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_yn,  gensym("bessel_yn"), A_DEFFLOAT, A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_i0,  gensym("bessel_i0"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_i1,  gensym("bessel_i1"), A_DEFFLOAT, 0);
+    class_addmethod(psl_class, (t_method)psl_bessel_in,  gensym("bessel_in"), A_DEFFLOAT, A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_clausen,  gensym("clausen"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_dawson,  gensym("dawson"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_debye_1,  gensym("debye_1"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_debye_2,  gensym("debye_2"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_debye_3,  gensym("debye_3"), A_DEFFLOAT, 0);
     class_addmethod(psl_class, (t_method)psl_debye_4,  gensym("debye_4"), A_DEFFLOAT, 0);
+
+    // create alias
+    class_addcreator((t_newmethod)psl_new, gensym("gsl"), A_DEFSYMBOL, 0);
 
     // set name of default help file
     class_sethelpsymbol(psl_class, gensym("help-psl"));
