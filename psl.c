@@ -181,6 +181,8 @@ void psl_float(t_psl *x, t_floatarg f) {
 
 void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
 
+    // atom_post("psl_list: ", argc, argv);
+
     if (s == gensym("list")) {
         post("s: list");
 
