@@ -2,7 +2,10 @@
 
 Wraps some [gsl](https://www.gnu.org/software/gsl/) functions for puredata.
 
-Tentatively using the name `psl` instead of `gsl` to prevent namespace collisions.
+Also us the [tinyexpr](https://github.com/codeplea/tinyexpr) library to for
+expression parsing.
+
+Note Using the name `psl` instead of `gsl` for namespace prefixing of code to prevent namespace collisions (which would have occurred otherwise).
 
 ## Rationale
 

@@ -8,12 +8,12 @@ ldflags += -lm $(LIBS)
 
 lib.name = psl
 
-class.sources := psl.c
+psl.class.sources := psl.c
 
 datafiles = help-psl.pd
 
-PDLIBBUILDER_DIR=pd-lib-builder
-include $(PDLIBBUILDER_DIR)/Makefile.pdlibbuilder
+
+include Makefile.pdlibbuilder
 
 
 render:

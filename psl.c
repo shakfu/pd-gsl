@@ -1,5 +1,5 @@
 /* psl.c
-
+////
 Provide a library of gsl functions.
 
 Features:
@@ -11,6 +11,9 @@ Author: shakfu
 Repo: https://github.com/shakfu/pd-psl.git
 
 */
+#include <math.h>
+#include <string.h>
+
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_airy.h>
@@ -18,9 +21,9 @@ Repo: https://github.com/shakfu/pd-psl.git
 #include <gsl/gsl_sf_clausen.h>
 #include <gsl/gsl_sf_dawson.h>
 #include <gsl/gsl_sf_debye.h>
-#include <math.h>
 
 #include "m_pd.h"
+#include "tinyexpr.h"
 
 
 // macros and defines
@@ -136,7 +139,8 @@ typedef struct _psl {
     // param_array
     t_float *arg_array;
 
-    // private vars
+    // for expression
+    char expr_buffer[MAXPDSTRING];
 
     // inlets
     int inlets;          // # of extra inlets in addition to default
@@ -164,6 +168,7 @@ void psl_bang(t_psl *x) {
 
     if (x->nargs == 3 && x->inlets == 2) {
         x->tfunc(x, x->arg_array[0], x->arg_array[1], x->arg_array[2]);
+
     }
 
 }
@@ -237,6 +242,49 @@ void psl_list(t_psl *x, t_symbol *s, int argc, t_atom *argv) {
     // error:
     //     pd_error(x, "psl_list error: incorrect arg type");
 }
+
+
+
+void psl_symbol(t_psl *x, t_symbol *s) {
+    post("s: %s", s->s_name);
+
+    // local buffer
+    int length = strlen(s->s_name);
+    char *buf = (char *)malloc(length * sizeof(char));
+    strcpy(buf, s->s_name);
+    post("buf: %s", buf);
+
+    // clear expr_buffer
+    memset(x->expr_buffer, 0, MAXPDSTRING);
+
+    int j = 0;
+    for (int i = 0; i < length; i++) {
+        // remove escape `\` required for commas
+        if (buf[i] != '\\') {
+            x->expr_buffer[j++] = buf[i];
+        } else if (x->expr_buffer[j - 1] == ' ') {
+            j--;
+        }
+    }
+    x->expr_buffer[length] = '\0';
+    free(buf);
+
+    post("x->expr_buffer: %s", x->expr_buffer);
+
+    te_variable vars[] = {
+        {"hypot", gsl_hypot, TE_FUNCTION2, NULL} /* TE_FUNCTION2 used because my_sum takes two arguments. */
+    };
+
+    te_expr *expr = te_compile(x->expr_buffer, vars, 2, 0);
+    const double res = te_eval(expr);
+    te_free(expr);
+    outlet_float(x->out_f, res);
+}
+
+
+
+
+
 
 // message-methods
 
@@ -661,6 +709,7 @@ void psl_setup(void) {
     class_addbang(psl_class, psl_bang);
     class_addfloat(psl_class, psl_float);
     class_addlist(psl_class, psl_list);
+    class_addsymbol(psl_class, psl_symbol);
 
 
     // message methods
