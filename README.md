@@ -1,11 +1,12 @@
 # puredata scientific library (psl)
 
-Wraps some [gsl](https://www.gnu.org/software/gsl/) functions for puredata.
+## Summary
 
-Also us the [tinyexpr](https://github.com/codeplea/tinyexpr) library to for
+Wraps some [gsl](https://www.gnu.org/software/gsl/) functions for puredata as
+we as the [tinyexpr](https://github.com/codeplea/tinyexpr) library for
 expression parsing.
 
-Note Using the name `psl` instead of `gsl` for namespace prefixing of code to prevent namespace collisions (which would have occurred otherwise).
+Dev-Note: using the name `psl` instead of `gsl` for namespace prefixing of code to prevent namespace collisions (which would have occurred otherwise).
 
 ## Rationale
 
@@ -79,4 +80,4 @@ typically running the following with each change:
 
 - [x] inlets-on-demand: proxy inlets to have the number of inlets dynamically grow with as per the selected functions (and its number of arguments).
 
-
+- [ ] checkout [exprtk](http://www.partow.net/programming/exprtk/)
